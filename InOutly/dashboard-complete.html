@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Attendance System</title>
+    <style>
+        :root {
+            --color-white: rgba(255, 255, 255, 1);
+            --color-cream-50: rgba(252, 252, 249, 1);
+            --color-cream-100: rgba(255, 255, 253, 1);
+            --color-gray-200: rgba(245, 245, 245, 1);
+            --color-gray-300: rgba(167, 169, 169, 1);
+            --color-slate-500: rgba(98, 108, 113, 1);
+            --color-slate-900: rgba(19, 52, 59, 1);
+            --color-teal-500: rgba(33, 128, 141, 1);
+            --color-teal-600: rgba(29, 116, 128, 1);
+            --color-red-400: rgba(255, 84, 89, 1);
+            --color-orange-400: rgba(230, 129, 97, 1);
+            --color-green-500: rgba(34, 197, 94, 1);
+            --color-blue-500: rgba(59, 130, 246, 1);
+
+            --color-background: var(--color-cream-50);
+            --color-surface: var(--color-cream-100);
+            --color-text: var(--color-slate-900);
+            --color-text-secondary: var(--color-slate-500);
+            --color-primary: var(--color-teal-500);
+            --color-success: var(--color-green-500);
+            --color-error: var(--color-red-400);
+            --color-warning: var(--color-orange-400);
+            --color-border: rgba(94, 82, 64, 0.2);
+            --color-card-border: rgba(94, 82, 64, 0.12);
+
+            --color-bg-1: rgba(59, 130, 246, 0.08);
+            --color-bg-2: rgba(245, 158, 11, 0.08);
+            --color-bg-3: rgba(34, 197, 94, 0.08);
+            --color-bg-4: rgba(239, 68, 68, 0.08);
+
+            --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --radius-base: 8px;
+            --radius-lg: 12px;
+            --space-4: 4px;
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-20: 20px;
+            --space-24: 24px;
+            --space-32: 32px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--color-background);
+            color: var(--color-text);
+        }
+
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--color-surface);
+            border-right: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: var(--space-24);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .sidebar-header h2 {
+            color: var(--color-primary);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .nav-section {
+            padding: var(--space-16);
+        }
+
+        .nav-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-8);
+            padding: 0 var(--space-12);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: var(--space-12);
+            padding: var(--space-12) var(--space-16);
+            border-radius: var(--radius-base);
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 150ms ease;
+            margin-bottom: var(--space-4);
+            cursor: pointer;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-link:hover {
+            background: var(--color-bg-1);
+            color: var(--color-text);
+        }
+
+        .nav-link.active {
+            background: var(--color-primary);
+            color: var(--color-white);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-header {
+            background: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            padding: 0 var(--space-32);
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: var(--space-8);
+            padding: var(--space-8) var(--space-16);
+            border-radius: var(--radius-base);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .connection-status.connected {
+            background: var(--color-bg-3);
+            color: var(--color-success);
+        }
+
+        .connection-status.disconnected {
+            background: var(--color-bg-4);
+            color: var(--color-error);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .main-body {
+            flex: 1;
+            padding: var(--space-32);
+            overflow-y: auto;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-20);
+            margin-bottom: var(--space-32);
+        }
+
+        .stat-card {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-card-border);
+            padding: var(--space-24);
+            display: flex;
+            align-items: center;
+            gap: var(--space-16);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .stat-icon--primary { background: var(--color-bg-1); }
+        .stat-icon--success { background: var(--color-bg-3); }
+        .stat-icon--error { background: var(--color-bg-4); }
+        .stat-icon--warning { background: var(--color-bg-2); }
+
+        .stat-content h3 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: var(--space-4);
+        }
+
+        .stat-content p {
+            color: var(--color-text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .card {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-card-border);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: var(--space-24);
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: var(--space-24);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-8);
+            padding: var(--space-8) var(--space-16);
+            border-radius: var(--radius-base);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 150ms;
+            border: none;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: var(--color-white);
+        }
+
+        .btn-primary:hover {
+            background: var(--color-teal-600);
+        }
+
+        .btn-danger {
+            background: var(--color-error);
+            color: var(--color-white);
+        }
+
+        .btn-secondary {
+            background: var(--color-gray-200);
+            color: var(--color-text);
+        }
+
+        .btn-sm {
+            padding: var(--space-4) var(--space-8);
+            font-size: 12px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: var(--space-12) var(--space-16);
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .data-table th {
+            background: var(--color-bg-1);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .data-table tbody tr:hover {
+            background: var(--color-bg-1);
+        }
+
+        .employee-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            color: var(--color-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: var(--space-12);
+        }
+
+        .employee-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .employee-details h4 {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .employee-details span {
+            color: var(--color-text-secondary);
+            font-size: 11px;
+        }
+
+        .status {
+            padding: var(--space-4) var(--space-8);
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status--in {
+            background: var(--color-bg-3);
+            color: var(--color-success);
+        }
+
+        .status--out {
+            background: var(--color-bg-4);
+            color: var(--color-error);
+        }
+
+        .status--not-arrived {
+            background: var(--color-bg-2);
+            color: var(--color-warning);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            padding: var(--space-32);
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-24);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--color-text-secondary);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-16);
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: var(--space-8);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: var(--space-12);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            font-size: 14px;
+            background: var(--color-white);
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--space-32);
+        }
+
+        .activity-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-12);
+            padding: var(--space-16) 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .activity-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--color-bg-3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 500;
+            font-size: 12px;
+            margin-bottom: var(--space-4);
+        }
+
+        .activity-time {
+            color: var(--color-text-secondary);
+            font-size: 11px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--space-32);
+            color: var(--color-text-secondary);
+        }
+
+        .filters {
+            display: flex;
+            gap: var(--space-16);
+            margin-bottom: var(--space-24);
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+
+        .filter-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 768px) {
+            .app {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>📊 Attendance System</h2>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
+                <button class="nav-link active" data-section="dashboard">
+                    <span>📈</span> Dashboard
+                </button>
+                <button class="nav-link" data-section="employees">
+                    <span>👥</span> Employees
+                </button>
+                <button class="nav-link" data-section="attendance">
+                    <span>⏰</span> Attendance
+                </button>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Reports</div>
+                <button class="nav-link" data-section="activity">
+                    <span>📋</span> Activity Log
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-title">
+                    <h1 id="page-title">Dashboard Overview</h1>
+                </div>
+                <div id="connectionStatus" class="connection-status disconnected">
+                    <div class="status-dot"></div>
+                    <span>Connecting...</span>
+                </div>
+            </header>
+
+            <!-- Main Body -->
+            <div class="main-body">
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="section active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--primary">👥</div>
+                            <div class="stat-content">
+                                <h3 id="total-employees">0</h3>
+                                <p>Total Employees</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--success">✅</div>
+                            <div class="stat-content">
+                                <h3 id="present-count">0</h3>
+                                <p>Present Today</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--error">❌</div>
+                            <div class="stat-content">
+                                <h3 id="absent-count">0</h3>
+                                <p>Not Present</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--warning">🕐</div>
+                            <div class="stat-content">
+                                <h3 id="last-scan-time">--:--</h3>
+                                <p>Last Activity</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Employee Status</h3>
+                            </div>
+                            <div class="card-body">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Status</th>
+                                            <th>Last Scan</th>
+                                            <th>Department</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dashboard-employee-list">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Live Activity</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="activity-feed" class="activity-list">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Employees Section -->
+                <section id="employees" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Employee Management</h3>
+                            <button class="btn btn-primary" onclick="showAddEmployeeModal()">
+                                ➕ Add Employee
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Department</th>
+                                        <th>Position</th>
+                                        <th>NFC Card</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="employee-list">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Attendance Section -->
+                <section id="attendance" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Attendance Reports</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="filters">
+                                <div class="filter-group">
+                                    <label class="filter-label">Date</label>
+                                    <input type="date" id="attendance-date" class="form-input" 
+                                           value="" onchange="loadAttendanceReport()">
+                                </div>
+                                <div class="filter-group">
+                                    <label class="filter-label">Department</label>
+                                    <select id="attendance-department" class="form-select" 
+                                            onchange="loadAttendanceReport()">
+                                        <option value="all">All Departments</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label class="filter-label">Employee</label>
+                                    <select id="attendance-employee" class="form-select" 
+                                            onchange="loadAttendanceReport()">
+                                        <option value="all">All Employees</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Department</th>
+                                        <th>Clock In</th>
+                                        <th>Clock Out</th>
+                                        <th>Total Hours</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendance-list">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Activity Section -->
+                <section id="activity" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Activity Log</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="full-activity-list" class="activity-list">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Employee Modal -->
+    <div id="employeeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">Add Employee</h3>
+                <button class="close-btn" onclick="hideEmployeeModal()">&times;</button>
+            </div>
+            <form id="employee-form">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="employee-name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="employee-email" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" id="employee-phone" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Department</label>
+                    <select id="employee-department" class="form-select" required>
+                        <option value="">Select Department</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Position</label>
+                    <input type="text" id="employee-position" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">NFC Card ID</label>
+                    <input type="text" id="employee-nfc" class="form-input" placeholder="Optional">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Hire Date</label>
+                    <input type="date" id="employee-hire-date" class="form-input">
+                </div>
+                <div style="display: flex; gap: var(--space-12); justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="hideEmployeeModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <span id="submit-text">Add Employee</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        class AttendanceSystem {
+            constructor() {
+                this.employees = new Map();
+                this.activities = [];
+                this.ws = null;
+                this.currentSection = 'dashboard';
+                this.editingEmployee = null;
+                this.departments = [];
+                
+                this.init();
+            }
+
+            init() {
+                this.setupNavigation();
+                this.initWebSocket();
+                this.setupEventListeners();
+                this.setDefaultDate();
+            }
+
+            setupNavigation() {
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        const section = e.currentTarget.dataset.section;
+                        this.showSection(section);
+                    });
+                });
+            }
+
+            showSection(sectionId) {
+                document.querySelectorAll('.section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById(sectionId).classList.add('active');
+
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+
+                const titles = {
+                    dashboard: 'Dashboard Overview',
+                    employees: 'Employee Management',
+                    attendance: 'Attendance Reports',
+                    activity: 'Activity Log'
+                };
+                document.getElementById('page-title').textContent = titles[sectionId];
+                
+                this.currentSection = sectionId;
+                
+                if (sectionId === 'attendance') {
+                    this.loadAttendanceReport();
+                }
+            }
+
+            initWebSocket() {
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}`;
+                
+                this.ws = new WebSocket(wsUrl);
+
+                this.ws.onopen = () => {
+                    console.log('Connected to server');
+                    this.updateConnectionStatus(true);
+                };
+
+                this.ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    this.handleMessage(data);
+                };
+
+                this.ws.onclose = () => {
+                    console.log('Disconnected from server');
+                    this.updateConnectionStatus(false);
+                    setTimeout(() => this.initWebSocket(), 3000);
+                };
+
+                this.ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    this.updateConnectionStatus(false);
+                };
+            }
+
+            handleMessage(data) {
+                console.log('Received:', data);
+                
+                if (data.type === 'connection' && data.employees) {
+                    this.loadEmployees(data.employees);
+                } else if (data.type === 'attendance_update') {
+                    this.handleAttendanceUpdate(data);
+                } else if (data.type === 'employee_created') {
+                    this.employees.set(data.employee.id, data.employee);
+                    this.updateAllViews();
+                } else if (data.type === 'employee_updated') {
+                    this.employees.set(data.employee.id, data.employee);
+                    this.updateAllViews();
+                } else if (data.type === 'employee_deleted') {
+                    this.employees.delete(data.employeeId);
+                    this.updateAllViews();
+                }
+            }
+
+            handleAttendanceUpdate(data) {
+                const employee = data.employee;
+                this.employees.set(employee.id, employee);
+                
+                const icon = data.action === 'Clock In' ? '🟢' : '🔴';
+                this.addActivity(
+                    employee.name,
+                    `${data.action} (${data.source === 'phone_scanner' ? 'NFC' : 'Manual'})`,
+                    new Date(data.timestamp),
+                    icon
+                );
+                
+                this.updateAllViews();
+            }
+
+            loadEmployees(employeeArray) {
+                this.employees.clear();
+                employeeArray.forEach(emp => {
+                    this.employees.set(emp.id, emp);
+                });
+                this.updateAllViews();
+            }
+
+            setupEventListeners() {
+                document.getElementById('employee-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveEmployee();
+                });
+            }
+
+            setDefaultDate() {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('attendance-date').value = today;
+                document.getElementById('employee-hire-date').value = today;
+            }
+
+            updateConnectionStatus(connected) {
+                const statusEl = document.getElementById('connectionStatus');
+                statusEl.className = `connection-status ${connected ? 'connected' : 'disconnected'}`;
+                statusEl.querySelector('span').textContent = connected ? 'Connected' : 'Disconnected';
+            }
+
+            addActivity(employeeName, action, time, icon = '📱') {
+                this.activities.unshift({
+                    employee: employeeName,
+                    action: action,
+                    time: time,
+                    icon: icon
+                });
+                
+                if (this.activities.length > 50) {
+                    this.activities = this.activities.slice(0, 50);
+                }
+                
+                this.updateActivityFeed();
+            }
+
+            updateAllViews() {
+                this.updateStats();
+                this.updateDashboardEmployeeList();
+                this.updateEmployeeList();
+                this.updateEmployeeSelects();
+                this.loadDepartments();
+            }
+
+            updateStats() {
+                const total = this.employees.size;
+                const present = Array.from(this.employees.values()).filter(emp => emp.status === 'In').length;
+                const absent = total - present;
+                
+                const lastActivity = this.activities.length > 0 ? this.activities[0] : null;
+                const lastTime = lastActivity ? lastActivity.time.toLocaleTimeString() : '--:--';
+
+                document.getElementById('total-employees').textContent = total;
+                document.getElementById('present-count').textContent = present;
+                document.getElementById('absent-count').textContent = absent;
+                document.getElementById('last-scan-time').textContent = lastTime;
+            }
+
+            updateDashboardEmployeeList() {
+                const tbody = document.getElementById('dashboard-employee-list');
+                let html = '';
+                
+                for (let employee of this.employees.values()) {
+                    const initials = employee.name.split(' ').map(word => word.charAt(0)).join('').toUpperCase();
+                    const lastScan = employee.lastScan ? new Date(employee.lastScan).toLocaleTimeString() : '--:--';
+                    
+                    html += `
+                        <tr>
+                            <td>
+                                <div class="employee-info">
+                                    <div class="employee-avatar">${initials}</div>
+                                    <div class="employee-details">
+                                        <h4>${employee.name}</h4>
+                                        <span>${employee.position}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="status status--${employee.status.toLowerCase().replace(' ', '-')}">${employee.status}</span></td>
+                            <td>${lastScan}</td>
+                            <td>${employee.department}</td>
+                        </tr>
+                    `;
+                }
+                
+                tbody.innerHTML = html || '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--color-text-secondary);">No employees found</td></tr>';
+            }
+
+            updateEmployeeList() {
+                const tbody = document.getElementById('employee-list');
+                let html = '';
+                
+                for (let employee of this.employees.values()) {
+                    const initials = employee.name.split(' ').map(word => word.charAt(0)).join('').toUpperCase();
+                    
+                    html += `
+                        <tr>
+                            <td>
+                                <div class="employee-info">
+                                    <div class="employee-avatar">${initials}</div>
+                                    <div class="employee-details">
+                                        <h4>${employee.name}</h4>
+                                        <span>${employee.email}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${employee.department}</td>
+                            <td>${employee.position}</td>
+                            <td><code>${employee.nfcId || 'Not assigned'}</code></td>
+                            <td><span class="status status--${employee.status.toLowerCase().replace(' ', '-')}">${employee.status}</span></td>
+                            <td>
+                                <button class="btn btn-secondary btn-sm" onclick="system.editEmployee('${employee.id}')">Edit</button>
+                                <button class="btn btn-danger btn-sm" onclick="system.deleteEmployee('${employee.id}')">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+                tbody.innerHTML = html || '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--color-text-secondary);">No employees found</td></tr>';
+            }
+
+            updateActivityFeed() {
+                const feedEl = document.getElementById('activity-feed');
+                const fullFeedEl = document.getElementById('full-activity-list');
+                
+                if (this.activities.length === 0) {
+                    const empty = '<div class="empty-state">No activity yet</div>';
+                    feedEl.innerHTML = empty;
+                    fullFeedEl.innerHTML = empty;
+                    return;
+                }
+
+                let html = '';
+                for (let activity of this.activities.slice(0, 10)) {
+                    html += `
+                        <div class="activity-item">
+                            <div class="activity-icon">${activity.icon}</div>
+                            <div class="activity-content">
+                                <div class="activity-title">${activity.employee}: ${activity.action}</div>
+                                <div class="activity-time">${activity.time.toLocaleString()}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                feedEl.innerHTML = html;
+                
+                let fullHtml = '';
+                for (let activity of this.activities) {
+                    fullHtml += `
+                        <div class="activity-item">
+                            <div class="activity-icon">${activity.icon}</div>
+                            <div class="activity-content">
+                                <div class="activity-title">${activity.employee}: ${activity.action}</div>
+                                <div class="activity-time">${activity.time.toLocaleString()}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                fullFeedEl.innerHTML = fullHtml;
+            }
+
+            async loadDepartments() {
+                try {
+                    const response = await fetch('/api/departments');
+                    this.departments = await response.json();
+                    
+                    const deptSelect = document.getElementById('employee-department');
+                    const attDeptSelect = document.getElementById('attendance-department');
+                    
+                    deptSelect.innerHTML = '<option value="">Select Department</option>';
+                    attDeptSelect.innerHTML = '<option value="all">All Departments</option>';
+                    
+                    this.departments.forEach(dept => {
+                        deptSelect.innerHTML += `<option value="${dept}">${dept}</option>`;
+                        attDeptSelect.innerHTML += `<option value="${dept}">${dept}</option>`;
+                    });
+                } catch (error) {
+                    console.error('Failed to load departments:', error);
+                }
+            }
+
+            updateEmployeeSelects() {
+                const empSelect = document.getElementById('attendance-employee');
+                empSelect.innerHTML = '<option value="all">All Employees</option>';
+                
+                for (let employee of this.employees.values()) {
+                    empSelect.innerHTML += `<option value="${employee.id}">${employee.name}</option>`;
+                }
+            }
+
+            async loadAttendanceReport() {
+                const date = document.getElementById('attendance-date').value;
+                const department = document.getElementById('attendance-department').value;
+                const employee = document.getElementById('attendance-employee').value;
+                
+                try {
+                    let url = `/api/attendance?date=${date}`;
+                    if (department !== 'all') url += `&department=${department}`;
+                    if (employee !== 'all') url += `&employee=${employee}`;
+                    
+                    const response = await fetch(url);
+                    const records = await response.json();
+                    
+                    const tbody = document.getElementById('attendance-list');
+                    let html = '';
+                    
+                    records.forEach(record => {
+                        const clockIn = record.clockIn ? new Date(record.clockIn).toLocaleTimeString() : '--:--';
+                        const clockOut = record.clockOut ? new Date(record.clockOut).toLocaleTimeString() : '--:--';
+                        const hours = record.totalHours ? record.totalHours.toFixed(2) : '0.00';
+                        
+                        html += `
+                            <tr>
+                                <td>${record.employee?.name || 'Unknown'}</td>
+                                <td>${record.employee?.department || 'Unknown'}</td>
+                                <td>${clockIn}</td>
+                                <td>${clockOut}</td>
+                                <td>${hours}h</td>
+                                <td><span class="status status--${record.status.toLowerCase()}">${record.status}</span></td>
+                            </tr>
+                        `;
+                    });
+                    
+                    tbody.innerHTML = html || '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--color-text-secondary);">No records found</td></tr>';
+                } catch (error) {
+                    console.error('Failed to load attendance:', error);
+                }
+            }
+
+            async saveEmployee() {
+                const employee = {
+                    name: document.getElementById('employee-name').value,
+                    email: document.getElementById('employee-email').value,
+                    phone: document.getElementById('employee-phone').value,
+                    department: document.getElementById('employee-department').value,
+                    position: document.getElementById('employee-position').value,
+                    nfcId: document.getElementById('employee-nfc').value,
+                    hireDate: document.getElementById('employee-hire-date').value
+                };
+
+                try {
+                    let response;
+                    if (this.editingEmployee) {
+                        response = await fetch(`/api/employees/${this.editingEmployee}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(employee)
+                        });
+                    } else {
+                        response = await fetch('/api/employees', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(employee)
+                        });
+                    }
+
+                    if (response.ok) {
+                        this.hideEmployeeModal();
+                    } else {
+                        alert('Failed to save employee');
+                    }
+                } catch (error) {
+                    console.error('Failed to save employee:', error);
+                    alert('Failed to save employee');
+                }
+            }
+
+            editEmployee(employeeId) {
+                const employee = this.employees.get(employeeId);
+                if (!employee) return;
+
+                this.editingEmployee = employeeId;
+                document.getElementById('modal-title').textContent = 'Edit Employee';
+                document.getElementById('submit-text').textContent = 'Update Employee';
+                
+                document.getElementById('employee-name').value = employee.name;
+                document.getElementById('employee-email').value = employee.email || '';
+                document.getElementById('employee-phone').value = employee.phone || '';
+                document.getElementById('employee-department').value = employee.department;
+                document.getElementById('employee-position').value = employee.position || '';
+                document.getElementById('employee-nfc').value = employee.nfcId || '';
+                document.getElementById('employee-hire-date').value = employee.hireDate || '';
+                
+                document.getElementById('employeeModal').classList.add('active');
+            }
+
+            async deleteEmployee(employeeId) {
+                if (!confirm('Are you sure you want to delete this employee?')) return;
+
+                try {
+                    const response = await fetch(`/api/employees/${employeeId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (!response.ok) {
+                        alert('Failed to delete employee');
+                    }
+                } catch (error) {
+                    console.error('Failed to delete employee:', error);
+                    alert('Failed to delete employee');
+                }
+            }
+
+            showAddEmployeeModal() {
+                this.editingEmployee = null;
+                document.getElementById('modal-title').textContent = 'Add Employee';
+                document.getElementById('submit-text').textContent = 'Add Employee';
+                document.getElementById('employee-form').reset();
+                document.getElementById('employee-hire-date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('employeeModal').classList.add('active');
+            }
+
+            hideEmployeeModal() {
+                document.getElementById('employeeModal').classList.remove('active');
+            }
+        }
+
+        // Global functions
+        let system;
+
+        function showAddEmployeeModal() {
+            system.showAddEmployeeModal();
+        }
+
+        function hideEmployeeModal() {
+            system.hideEmployeeModal();
+        }
+
+        function loadAttendanceReport() {
+            system.loadAttendanceReport();
+        }
+
+        // Initialize system
+        document.addEventListener('DOMContentLoaded', () => {
+            system = new AttendanceSystem();
+            
+            // Load departments on start
+            system.loadDepartments();
+        });
+
+        // Close modal on outside click
+        document.getElementById('employeeModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                hideEmployeeModal();
+            }
+        });
+    </script>
+</body>
+</html>

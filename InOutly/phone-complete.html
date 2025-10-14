@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Attendance Scanner</title>
+    <style>
+        :root {
+            --color-primary: #2563eb;
+            --color-success: #10b981;
+            --color-error: #ef4444;
+            --color-warning: #f59e0b;
+            --color-white: #ffffff;
+            --color-gray-50: #f9fafb;
+            --color-gray-100: #f3f4f6;
+            --color-gray-200: #e5e7eb;
+            --color-gray-300: #d1d5db;
+            --color-gray-500: #6b7280;
+            --color-gray-600: #4b5563;
+            --color-gray-900: #111827;
+            
+            --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--gradient-primary);
+            min-height: 100vh;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--color-white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        .header {
+            background: var(--gradient-primary);
+            color: var(--color-white);
+            padding: 2rem 1.5rem 1rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.875rem;
+        }
+
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        .connection-status.connected {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--color-success);
+        }
+
+        .connection-status.disconnected {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--color-error);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .main-content {
+            padding: 2rem 1.5rem;
+        }
+
+        .employee-selector {
+            margin-bottom: 2rem;
+        }
+
+        .selector-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-gray-900);
+            margin-bottom: 1rem;
+        }
+
+        .employee-grid {
+            display: grid;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .employee-card {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: var(--color-gray-50);
+            border: 2px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all 0.2s;
+            gap: 0.75rem;
+        }
+
+        .employee-card:hover {
+            border-color: var(--color-primary);
+            background: var(--color-white);
+            box-shadow: var(--shadow-md);
+        }
+
+        .employee-card.selected {
+            border-color: var(--color-primary);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .employee-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            color: var(--color-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .employee-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .employee-name {
+            font-weight: 600;
+            color: var(--color-gray-900);
+            margin-bottom: 0.25rem;
+        }
+
+        .employee-details {
+            font-size: 0.75rem;
+            color: var(--color-gray-500);
+        }
+
+        .employee-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.625rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            flex-shrink: 0;
+        }
+
+        .status-in {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--color-success);
+        }
+
+        .status-out {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--color-error);
+        }
+
+        .status-not-arrived {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--color-warning);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: var(--color-white);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-success {
+            background: var(--gradient-success);
+            color: var(--color-white);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-success:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .manual-section {
+            background: var(--color-gray-50);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .manual-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-gray-900);
+            margin-bottom: 1rem;
+        }
+
+        .manual-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--color-gray-200);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            background: var(--color-white);
+        }
+
+        .manual-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        .manual-btn {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .activity-section {
+            background: var(--color-white);
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .activity-header {
+            padding: 1rem 1.5rem;
+            background: var(--color-gray-50);
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+
+        .activity-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-gray-900);
+        }
+
+        .activity-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--color-gray-200);
+            gap: 0.75rem;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--color-gray-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .activity-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .activity-text {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--color-gray-900);
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-time {
+            font-size: 0.75rem;
+            color: var(--color-gray-500);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--color-gray-500);
+        }
+
+        .empty-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: var(--color-success);
+            padding: 1rem;
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem;
+            }
+            
+            .header {
+                padding: 1.5rem 1rem 0.75rem;
+            }
+            
+            .main-content {
+                padding: 1.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 Attendance Scanner</h1>
+            <p>Select employee and clock in/out</p>
+            <div id="connectionStatus" class="connection-status disconnected">
+                <div class="status-dot"></div>
+                <span>Connecting...</span>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Employee Selector -->
+            <div class="employee-selector">
+                <h3 class="selector-title">Select Employee</h3>
+                <div id="employee-grid" class="employee-grid">
+                    <div class="empty-state">
+                        <div class="empty-icon">👥</div>
+                        <div>Loading employees...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button id="clockInBtn" class="btn btn-success" disabled onclick="recordAttendance('in')">
+                    ✅ Clock In
+                </button>
+                <button id="clockOutBtn" class="btn btn-primary" disabled onclick="recordAttendance('out')">
+                    ❌ Clock Out
+                </button>
+            </div>
+
+            <!-- Manual Entry -->
+            <div class="manual-section">
+                <h3 class="manual-title">Manual Entry</h3>
+                <input type="text" id="manualInput" class="manual-input" 
+                       placeholder="Enter employee NFC card ID">
+                <button id="manualBtn" class="btn btn-primary manual-btn" onclick="sendManualEntry()">
+                    📤 Submit Entry
+                </button>
+            </div>
+
+            <div id="successMessage" class="success-message"></div>
+
+            <!-- Recent Activity -->
+            <div class="activity-section">
+                <div class="activity-header">
+                    <h3 class="activity-title">Recent Activity</h3>
+                </div>
+                <div id="activityList" class="activity-list">
+                    <div class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <div>No activity yet</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class EmployeeScanner {
+            constructor() {
+                this.ws = null;
+                this.employees = new Map();
+                this.selectedEmployee = null;
+                this.activities = [];
+                
+                this.init();
+            }
+
+            init() {
+                this.initWebSocket();
+                this.setupEventListeners();
+            }
+
+            initWebSocket() {
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}`;
+                
+                this.ws = new WebSocket(wsUrl);
+
+                this.ws.onopen = () => {
+                    console.log('Connected to server');
+                    this.updateConnectionStatus(true);
+                };
+
+                this.ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    this.handleMessage(data);
+                };
+
+                this.ws.onclose = () => {
+                    console.log('Disconnected from server');
+                    this.updateConnectionStatus(false);
+                    setTimeout(() => this.initWebSocket(), 3000);
+                };
+
+                this.ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    this.updateConnectionStatus(false);
+                };
+            }
+
+            handleMessage(data) {
+                console.log('Received:', data);
+                
+                if (data.type === 'connection' && data.employees) {
+                    this.loadEmployees(data.employees);
+                } else if (data.type === 'attendance_update') {
+                    this.handleAttendanceUpdate(data);
+                } else if (data.type === 'employee_created') {
+                    this.employees.set(data.employee.id, data.employee);
+                    this.updateEmployeeGrid();
+                } else if (data.type === 'employee_updated') {
+                    this.employees.set(data.employee.id, data.employee);
+                    this.updateEmployeeGrid();
+                } else if (data.type === 'employee_deleted') {
+                    this.employees.delete(data.employeeId);
+                    if (this.selectedEmployee === data.employeeId) {
+                        this.selectedEmployee = null;
+                        this.updateActionButtons();
+                    }
+                    this.updateEmployeeGrid();
+                } else if (data.type === 'scan_error') {
+                    this.showMessage(data.message, 'error');
+                }
+            }
+
+            loadEmployees(employeeArray) {
+                this.employees.clear();
+                employeeArray.forEach(emp => {
+                    this.employees.set(emp.id, emp);
+                });
+                this.updateEmployeeGrid();
+            }
+
+            handleAttendanceUpdate(data) {
+                const employee = data.employee;
+                this.employees.set(employee.id, employee);
+                
+                // Update selected employee if it matches
+                if (this.selectedEmployee === employee.id) {
+                    this.updateActionButtons();
+                }
+                
+                this.updateEmployeeGrid();
+                
+                const action = data.action === 'Clock In' ? 'clocked in' : 'clocked out';
+                const source = data.source === 'phone_scanner' ? 'NFC' : 'Manual';
+                this.addActivity(`${employee.name} ${action} (${source})`, new Date(data.timestamp));
+                
+                this.showMessage(`${employee.name} successfully ${action}!`, 'success');
+            }
+
+            setupEventListeners() {
+                document.getElementById('manualInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.sendManualEntry();
+                    }
+                });
+            }
+
+            updateConnectionStatus(connected) {
+                const statusEl = document.getElementById('connectionStatus');
+                statusEl.className = `connection-status ${connected ? 'connected' : 'disconnected'}`;
+                statusEl.querySelector('span').textContent = connected ? 'Connected' : 'Disconnected';
+            }
+
+            updateEmployeeGrid() {
+                const grid = document.getElementById('employee-grid');
+                
+                if (this.employees.size === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">👥</div>
+                            <div>No employees found</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                for (let employee of this.employees.values()) {
+                    const initials = employee.name.split(' ')
+                        .map(word => word.charAt(0))
+                        .join('')
+                        .toUpperCase()
+                        .substr(0, 2);
+                    
+                    const isSelected = this.selectedEmployee === employee.id;
+                    const statusClass = employee.status.toLowerCase().replace(' ', '-');
+                    
+                    html += `
+                        <div class="employee-card ${isSelected ? 'selected' : ''}" 
+                             onclick="scanner.selectEmployee('${employee.id}')">
+                            <div class="employee-avatar">${initials}</div>
+                            <div class="employee-info">
+                                <div class="employee-name">${employee.name}</div>
+                                <div class="employee-details">${employee.department} • ${employee.position}</div>
+                            </div>
+                            <div class="employee-status status-${statusClass}">${employee.status}</div>
+                        </div>
+                    `;
+                }
+                
+                grid.innerHTML = html;
+            }
+
+            selectEmployee(employeeId) {
+                this.selectedEmployee = employeeId;
+                this.updateEmployeeGrid();
+                this.updateActionButtons();
+            }
+
+            updateActionButtons() {
+                const clockInBtn = document.getElementById('clockInBtn');
+                const clockOutBtn = document.getElementById('clockOutBtn');
+                
+                if (!this.selectedEmployee) {
+                    clockInBtn.disabled = true;
+                    clockOutBtn.disabled = true;
+                    return;
+                }
+                
+                const employee = this.employees.get(this.selectedEmployee);
+                if (!employee) return;
+                
+                if (employee.status === 'In') {
+                    clockInBtn.disabled = true;
+                    clockOutBtn.disabled = false;
+                } else {
+                    clockInBtn.disabled = false;
+                    clockOutBtn.disabled = true;
+                }
+            }
+
+            recordAttendance(action) {
+                if (!this.selectedEmployee) return;
+                
+                const employee = this.employees.get(this.selectedEmployee);
+                if (!employee) return;
+                
+                // Show loading state
+                const btn = action === 'in' ? document.getElementById('clockInBtn') : document.getElementById('clockOutBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="loading"></span> Processing...';
+                btn.disabled = true;
+                
+                // Send attendance data
+                const data = {
+                    type: 'nfc_scan',
+                    nfcId: employee.nfcId || employee.id, // Use employee ID if no NFC card
+                    timestamp: new Date().toISOString(),
+                    source: 'phone_scanner'
+                };
+                
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify(data));
+                } else {
+                    this.showMessage('Not connected to server', 'error');
+                    btn.innerHTML = originalText;
+                    this.updateActionButtons();
+                }
+            }
+
+            sendManualEntry() {
+                const input = document.getElementById('manualInput');
+                const nfcId = input.value.trim();
+                
+                if (!nfcId) {
+                    this.showMessage('Please enter an NFC card ID', 'error');
+                    return;
+                }
+                
+                // Show loading state
+                const btn = document.getElementById('manualBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="loading"></span> Processing...';
+                btn.disabled = true;
+                
+                const data = {
+                    type: 'nfc_scan',
+                    nfcId: nfcId,
+                    timestamp: new Date().toISOString(),
+                    source: 'manual_entry'
+                };
+                
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify(data));
+                    input.value = '';
+                } else {
+                    this.showMessage('Not connected to server', 'error');
+                }
+                
+                // Reset button after delay
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+            }
+
+            addActivity(text, time) {
+                this.activities.unshift({
+                    text: text,
+                    time: time
+                });
+                
+                if (this.activities.length > 20) {
+                    this.activities = this.activities.slice(0, 20);
+                }
+                
+                this.updateActivityList();
+            }
+
+            updateActivityList() {
+                const list = document.getElementById('activityList');
+                
+                if (this.activities.length === 0) {
+                    list.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📋</div>
+                            <div>No activity yet</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                for (let activity of this.activities) {
+                    html += `
+                        <div class="activity-item">
+                            <div class="activity-icon">📱</div>
+                            <div class="activity-content">
+                                <div class="activity-text">${activity.text}</div>
+                                <div class="activity-time">${activity.time.toLocaleString()}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                list.innerHTML = html;
+            }
+
+            showMessage(text, type = 'success') {
+                const messageEl = document.getElementById('successMessage');
+                messageEl.textContent = text;
+                messageEl.className = `success-message ${type === 'error' ? 'error-message' : ''}`;
+                messageEl.style.display = 'block';
+                
+                setTimeout(() => {
+                    messageEl.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Global functions
+        let scanner;
+
+        function recordAttendance(action) {
+            scanner.recordAttendance(action);
+        }
+
+        function sendManualEntry() {
+            scanner.sendManualEntry();
+        }
+
+        // Initialize scanner
+        document.addEventListener('DOMContentLoaded', () => {
+            scanner = new EmployeeScanner();
+        });
+    </script>
+</body>
+</html>
