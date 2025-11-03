@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Attendance Dashboard</title>
+    <style>
+        :root {
+            /* Color Tokens */
+            --color-white: rgba(255, 255, 255, 1);
+            --color-cream-50: rgba(252, 252, 249, 1);
+            --color-cream-100: rgba(255, 255, 253, 1);
+            --color-gray-200: rgba(245, 245, 245, 1);
+            --color-gray-300: rgba(167, 169, 169, 1);
+            --color-gray-400: rgba(119, 124, 124, 1);
+            --color-slate-500: rgba(98, 108, 113, 1);
+            --color-slate-900: rgba(19, 52, 59, 1);
+            --color-teal-300: rgba(50, 184, 198, 1);
+            --color-teal-500: rgba(33, 128, 141, 1);
+            --color-teal-600: rgba(29, 116, 128, 1);
+            --color-red-400: rgba(255, 84, 89, 1);
+            --color-orange-400: rgba(230, 129, 97, 1);
+
+            /* Semantic Colors */
+            --color-background: var(--color-cream-50);
+            --color-surface: var(--color-cream-100);
+            --color-text: var(--color-slate-900);
+            --color-text-secondary: var(--color-slate-500);
+            --color-primary: var(--color-teal-500);
+            --color-primary-hover: var(--color-teal-600);
+            --color-success: var(--color-teal-500);
+            --color-error: var(--color-red-400);
+            --color-warning: var(--color-orange-400);
+            --color-border: rgba(94, 82, 64, 0.2);
+            --color-card-border: rgba(94, 82, 64, 0.12);
+
+            /* Background Colors */
+            --color-bg-1: rgba(59, 130, 246, 0.08);
+            --color-bg-2: rgba(245, 158, 11, 0.08);
+            --color-bg-3: rgba(34, 197, 94, 0.08);
+            --color-bg-4: rgba(239, 68, 68, 0.08);
+
+            /* Typography */
+            --font-family-base: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-size-xs: 11px;
+            --font-size-sm: 12px;
+            --font-size-base: 14px;
+            --font-size-lg: 16px;
+            --font-size-xl: 18px;
+            --font-size-2xl: 20px;
+            --font-size-3xl: 24px;
+            --font-size-4xl: 30px;
+            --font-weight-normal: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 550;
+            --font-weight-bold: 600;
+
+            /* Spacing */
+            --space-4: 4px;
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-20: 20px;
+            --space-24: 24px;
+            --space-32: 32px;
+
+            /* Border Radius */
+            --radius-base: 8px;
+            --radius-lg: 12px;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        }
+
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: var(--font-size-base);
+            font-family: var(--font-family-base);
+            line-height: 1.5;
+            color: var(--color-text);
+            background-color: var(--color-background);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Layout */
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: var(--color-surface);
+            border-right: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: var(--space-24);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .sidebar-header h2 {
+            color: var(--color-primary);
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: var(--space-16);
+        }
+
+        .nav-section {
+            margin-bottom: var(--space-24);
+        }
+
+        .nav-section-title {
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-8);
+            padding: 0 var(--space-12);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: var(--space-12);
+            padding: var(--space-12) var(--space-16);
+            border-radius: var(--radius-base);
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-medium);
+            transition: all 150ms ease;
+            margin-bottom: var(--space-4);
+            cursor: pointer;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-link:hover {
+            background-color: var(--color-bg-1);
+            color: var(--color-text);
+        }
+
+        .nav-link.active {
+            background-color: var(--color-primary);
+            color: var(--color-white);
+        }
+
+        .nav-link-icon {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-header {
+            background-color: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            padding: 0 var(--space-32);
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title h1 {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-text);
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: var(--space-8);
+            padding: var(--space-8) var(--space-16);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .connection-status.connected {
+            background-color: var(--color-bg-3);
+            color: var(--color-success);
+        }
+
+        .connection-status.disconnected {
+            background-color: var(--color-bg-4);
+            color: var(--color-error);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: currentColor;
+        }
+
+        .main-body {
+            flex: 1;
+            padding: var(--space-32);
+            overflow-y: auto;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-20);
+            margin-bottom: var(--space-32);
+        }
+
+        .stat-card {
+            background-color: var(--color-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-card-border);
+            padding: var(--space-24);
+            display: flex;
+            align-items: center;
+            gap: var(--space-16);
+            box-shadow: var(--shadow-sm);
+            transition: all 250ms ease;
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-2xl);
+            flex-shrink: 0;
+        }
+
+        .stat-icon--primary {
+            background-color: var(--color-bg-1);
+        }
+
+        .stat-icon--success {
+            background-color: var(--color-bg-3);
+        }
+
+        .stat-icon--warning {
+            background-color: var(--color-bg-2);
+        }
+
+        .stat-icon--error {
+            background-color: var(--color-bg-4);
+        }
+
+        .stat-content h3 {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-text);
+            margin-bottom: var(--space-4);
+        }
+
+        .stat-content p {
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            margin: 0;
+        }
+
+        /* Card Component */
+        .card {
+            background-color: var(--color-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-card-border);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: var(--space-24);
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text);
+        }
+
+        .card-body {
+            padding: var(--space-24);
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--font-size-sm);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: var(--space-12) var(--space-16);
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .data-table th {
+            background-color: var(--color-bg-1);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text);
+            font-size: var(--font-size-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: var(--color-bg-1);
+        }
+
+        /* Employee Avatar */
+        .employee-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            color: var(--color-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            margin-right: var(--space-12);
+        }
+
+        .employee-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .employee-details h4 {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-medium);
+            color: var(--color-text);
+            margin-bottom: 2px;
+        }
+
+        .employee-details span {
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-xs);
+        }
+
+        /* Status Badges */
+        .status {
+            padding: var(--space-4) var(--space-8);
+            border-radius: 20px;
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-block;
+        }
+
+        .status--in {
+            background-color: var(--color-bg-3);
+            color: var(--color-success);
+        }
+
+        .status--out {
+            background-color: var(--color-bg-4);
+            color: var(--color-error);
+        }
+
+        .status--not-arrived {
+            background-color: var(--color-bg-2);
+            color: var(--color-warning);
+        }
+
+        /* Activity Feed */
+        .activity-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-12);
+            padding: var(--space-16) 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--color-bg-3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-base);
+            flex-shrink: 0;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: var(--font-weight-medium);
+            color: var(--color-text);
+            font-size: var(--font-size-sm);
+            margin-bottom: var(--space-4);
+        }
+
+        .activity-details {
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-xs);
+            margin-bottom: var(--space-2);
+        }
+
+        .activity-time {
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-xs);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: var(--space-32);
+            color: var(--color-text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: var(--font-size-4xl);
+            margin-bottom: var(--space-16);
+        }
+
+        .empty-state h3 {
+            font-size: var(--font-size-lg);
+            margin-bottom: var(--space-8);
+        }
+
+        /* Grid Layout */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--space-32);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+
+            .main-body {
+                padding: var(--space-16);
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-8) var(--space-16);
+            border-radius: var(--radius-base);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all 150ms ease;
+            border: none;
+            text-decoration: none;
+        }
+
+        .btn--primary {
+            background: var(--color-primary);
+            color: var(--color-white);
+        }
+
+        .btn--primary:hover {
+            background: var(--color-primary-hover);
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Attendance System</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <button class="nav-link active" data-section="dashboard">
+                        <div class="nav-link-icon">📊</div>
+                        Dashboard
+                    </button>
+                    <button class="nav-link" data-section="employees">
+                        <div class="nav-link-icon">👥</div>
+                        Employees
+                    </button>
+                    <button class="nav-link" data-section="attendance">
+                        <div class="nav-link-icon">⏰</div>
+                        Attendance
+                    </button>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">NFC</div>
+                    <button class="nav-link" data-section="nfc">
+                        <div class="nav-link-icon">📱</div>
+                        NFC Cards
+                    </button>
+                    <button class="nav-link" data-section="activity">
+                        <div class="nav-link-icon">📋</div>
+                        Activity
+                    </button>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-title">
+                    <h1 id="page-title">Dashboard Overview</h1>
+                </div>
+                <div id="connectionStatus" class="connection-status disconnected">
+                    <div class="status-dot"></div>
+                    <span>Connecting...</span>
+                </div>
+            </header>
+
+            <!-- Main Body -->
+            <div class="main-body">
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="section active">
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--primary">👥</div>
+                            <div class="stat-content">
+                                <h3 id="total-employees">0</h3>
+                                <p>Total Employees</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--success">✅</div>
+                            <div class="stat-content">
+                                <h3 id="present-count">0</h3>
+                                <p>Present Today</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--error">❌</div>
+                            <div class="stat-content">
+                                <h3 id="absent-count">0</h3>
+                                <p>Not Present</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--warning">🕐</div>
+                            <div class="stat-content">
+                                <h3 id="last-scan-time">--:--</h3>
+                                <p>Last Activity</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content Grid -->
+                    <div class="content-grid">
+                        <!-- Employee Status Table -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Employee Status</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-container">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Employee</th>
+                                                <th>Status</th>
+                                                <th>Last Scan</th>
+                                                <th>NFC ID</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="employee-list">
+                                            <tr>
+                                                <td colspan="4">
+                                                    <div class="empty-state">
+                                                        <div class="empty-state-icon">👥</div>
+                                                        <h3>No Employees Yet</h3>
+                                                        <p>Waiting for NFC card scans...</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity Feed -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Live Activity</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="activity-feed" class="activity-list">
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon">📱</div>
+                                        <h3>Waiting for Activity</h3>
+                                        <p>NFC scans will appear here</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Other Sections (Hidden by default) -->
+                <section id="employees" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Employee Management</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Employee management features coming soon...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="attendance" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Attendance Reports</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Attendance reporting features coming soon...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="nfc" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">NFC Card Management</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>NFC card management features coming soon...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="activity" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Activity Log</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="full-activity-list" class="activity-list">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">📋</div>
+                                    <h3>No Activity Yet</h3>
+                                    <p>Activity will be logged here</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        class AttendanceDashboard {
+            constructor() {
+                this.employees = new Map();
+                this.activities = [];
+                this.ws = null;
+                this.currentSection = 'dashboard';
+                
+                this.init();
+            }
+
+            init() {
+                this.setupNavigation();
+                this.initWebSocket();
+                this.initDemoData();
+            }
+
+            setupNavigation() {
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        const section = e.currentTarget.dataset.section;
+                        this.showSection(section);
+                    });
+                });
+            }
+
+            showSection(sectionId) {
+                // Hide all sections
+                document.querySelectorAll('.section').forEach(section => {
+                    section.classList.remove('active');
+                });
+
+                // Show selected section
+                document.getElementById(sectionId).classList.add('active');
+
+                // Update nav
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+
+                // Update page title
+                const titles = {
+                    dashboard: 'Dashboard Overview',
+                    employees: 'Employee Management',
+                    attendance: 'Attendance Reports',
+                    nfc: 'NFC Card Management',
+                    activity: 'Activity Log'
+                };
+                document.getElementById('page-title').textContent = titles[sectionId] || 'Dashboard';
+                
+                this.currentSection = sectionId;
+            }
+
+            initWebSocket() {
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}`;
+                
+                this.ws = new WebSocket(wsUrl);
+
+                this.ws.onopen = () => {
+                    console.log('Connected to server');
+                    this.updateConnectionStatus(true);
+                };
+
+                this.ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    this.handleMessage(data);
+                };
+
+                this.ws.onclose = () => {
+                    console.log('Disconnected from server');
+                    this.updateConnectionStatus(false);
+                    setTimeout(() => this.initWebSocket(), 3000);
+                };
+
+                this.ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    this.updateConnectionStatus(false);
+                };
+            }
+
+            handleMessage(data) {
+                console.log('Received:', data);
+                
+                if (data.type === 'nfc_scan') {
+                    this.handleNFCScan(data);
+                } else if (data.type === 'connection') {
+                    this.addActivity('System', 'Dashboard connected', new Date(), '🔗');
+                }
+            }
+
+            handleNFCScan(data) {
+                const { nfcId, timestamp, source } = data;
+                
+                let employee = this.findEmployeeByNFC(nfcId);
+                if (!employee) {
+                    employee = {
+                        id: `EMP${String(this.employees.size + 1).padStart(3, '0')}`,
+                        name: `Employee ${this.employees.size + 1}`,
+                        department: 'General',
+                        nfcId: nfcId,
+                        status: 'Not Arrived',
+                        lastScan: null
+                    };
+                    this.employees.set(employee.id, employee);
+                }
+
+                const currentTime = new Date(timestamp);
+                let action = '';
+                let icon = '';
+                
+                if (employee.status === 'Not Arrived' || employee.status === 'Out') {
+                    employee.status = 'In';
+                    action = 'Clock In';
+                    icon = '🟢';
+                } else {
+                    employee.status = 'Out';
+                    action = 'Clock Out';
+                    icon = '🔴';
+                }
+
+                employee.lastScan = currentTime;
+                
+                this.addActivity(employee.name, `${action} (${source === 'phone_scanner' ? 'NFC' : 'Manual'})`, currentTime, icon);
+                this.updateUI();
+            }
+
+            findEmployeeByNFC(nfcId) {
+                for (let employee of this.employees.values()) {
+                    if (employee.nfcId === nfcId) {
+                        return employee;
+                    }
+                }
+                return null;
+            }
+
+            addActivity(employeeName, action, time, icon = '📱') {
+                this.activities.unshift({
+                    employee: employeeName,
+                    action: action,
+                    time: time,
+                    icon: icon
+                });
+                
+                if (this.activities.length > 50) {
+                    this.activities = this.activities.slice(0, 50);
+                }
+                
+                this.updateActivityFeed();
+                this.updateStats();
+            }
+
+            updateConnectionStatus(connected) {
+                const statusEl = document.getElementById('connectionStatus');
+                statusEl.className = `connection-status ${connected ? 'connected' : 'disconnected'}`;
+                statusEl.querySelector('span').textContent = connected ? 'Connected' : 'Disconnected';
+            }
+
+            updateUI() {
+                this.updateEmployeeList();
+                this.updateStats();
+            }
+
+            updateEmployeeList() {
+                const tbody = document.getElementById('employee-list');
+                
+                if (this.employees.size === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">👥</div>
+                                    <h3>No Employees Yet</h3>
+                                    <p>Waiting for NFC card scans...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                for (let employee of this.employees.values()) {
+                    const lastScanStr = employee.lastScan 
+                        ? employee.lastScan.toLocaleTimeString() 
+                        : '--:--';
+                    
+                    const initials = employee.name.split(' ')
+                        .map(word => word.charAt(0))
+                        .join('')
+                        .toUpperCase();
+                    
+                    html += `
+                        <tr>
+                            <td>
+                                <div class="employee-info">
+                                    <div class="employee-avatar">${initials}</div>
+                                    <div class="employee-details">
+                                        <h4>${employee.name}</h4>
+                                        <span>${employee.department}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="status status--${employee.status.toLowerCase().replace(' ', '-')}">${employee.status}</span>
+                            </td>
+                            <td>${lastScanStr}</td>
+                            <td><code>${employee.nfcId.substr(-8)}</code></td>
+                        </tr>
+                    `;
+                }
+                
+                tbody.innerHTML = html;
+            }
+
+            updateActivityFeed() {
+                const feedEl = document.getElementById('activity-feed');
+                const fullFeedEl = document.getElementById('full-activity-list');
+                
+                if (this.activities.length === 0) {
+                    const emptyState = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📱</div>
+                            <h3>Waiting for Activity</h3>
+                            <p>NFC scans will appear here</p>
+                        </div>
+                    `;
+                    feedEl.innerHTML = emptyState;
+                    fullFeedEl.innerHTML = emptyState;
+                    return;
+                }
+
+                let html = '';
+                for (let activity of this.activities.slice(0, 10)) {
+                    html += `
+                        <div class="activity-item">
+                            <div class="activity-icon">${activity.icon}</div>
+                            <div class="activity-content">
+                                <div class="activity-title">${activity.employee}: ${activity.action}</div>
+                                <div class="activity-time">${activity.time.toLocaleString()}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                feedEl.innerHTML = html;
+                
+                // Full activity list for activity section
+                let fullHtml = '';
+                for (let activity of this.activities) {
+                    fullHtml += `
+                        <div class="activity-item">
+                            <div class="activity-icon">${activity.icon}</div>
+                            <div class="activity-content">
+                                <div class="activity-title">${activity.employee}: ${activity.action}</div>
+                                <div class="activity-time">${activity.time.toLocaleString()}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                fullFeedEl.innerHTML = fullHtml;
+            }
+
+            updateStats() {
+                const totalEmployees = this.employees.size;
+                const presentCount = Array.from(this.employees.values()).filter(emp => emp.status === 'In').length;
+                const absentCount = totalEmployees - presentCount;
+                
+                const lastActivity = this.activities.length > 0 ? this.activities[0] : null;
+                const lastScanTime = lastActivity ? lastActivity.time.toLocaleTimeString() : '--:--';
+
+                document.getElementById('total-employees').textContent = totalEmployees;
+                document.getElementById('present-count').textContent = presentCount;
+                document.getElementById('absent-count').textContent = absentCount;
+                document.getElementById('last-scan-time').textContent = lastScanTime;
+            }
+
+            initDemoData() {
+                // Add some demo employees for testing
+                const demoEmployees = [
+                    { id: 'EMP001', name: 'John Doe', department: 'Engineering', nfcId: '04E91A2A3B5C80', status: 'Not Arrived' },
+                    { id: 'EMP002', name: 'Jane Smith', department: 'Marketing', nfcId: '04A23F5D1E7C92', status: 'Not Arrived' },
+                    { id: 'EMP003', name: 'Bob Johnson', department: 'HR', nfcId: '04B45C8A9F2D14', status: 'Not Arrived' }
+                ];
+
+                demoEmployees.forEach(emp => {
+                    this.employees.set(emp.id, emp);
+                });
+
+                this.updateUI();
+            }
+        }
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new AttendanceDashboard();
+        });
+    </script>
+</body>
+</html>
