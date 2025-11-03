@@ -1,8 +1,27 @@
 {
-  "name": "nfc-attendance",
+  "name": "employee-management-system",
   "version": "1.0.0",
+  "description": "Complete employee management system with NFC attendance tracking",
   "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "employee",
+    "management",
+    "nfc",
+    "attendance",
+    "projects",
+    "tasks"
+  ],
   "dependencies": {
-    "ws": "^8.14.0"
-  }
+    "mysql2": "^3.15.3",
+    "ws": "^8.18.3"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "author": "",
+  "license": "MIT"
 }
