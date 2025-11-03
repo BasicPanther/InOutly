@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFC Attendance Scanner</title>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 Attendance Scanner</h1>
+            <p>Scan your NFC card to record attendance</p>
+        </div>
+
+        <div class="status-card">
+            <div id="connection-status" class="status disconnected">
+                <span class="status-dot"></span>
+                <span>Connecting...</span>
+            </div>
+        </div>
+
+        <div class="scan-area">
+            <div id="nfc-icon" class="nfc-icon">🔵</div>
+            <h2 id="scan-status">Ready to Scan</h2>
+            <p id="scan-message">Hold your NFC card near the phone</p>
+        </div>
+
+        <button id="scan-button" class="scan-button" onclick="startNFCScan()">
+            Start Scanning
+        </button>
+
+        <div class="last-scans">
+            <h3>Recent Scans</h3>
+            <div id="scan-list"></div>
+        </div>
+
+        <div class="manual-entry">
+            <h3>Manual Entry</h3>
+            <p>If NFC is not available, enter card ID manually:</p>
+            <input type="text" id="manual-id" placeholder="Enter Card ID">
+            <button onclick="manualScan()">Submit</button>
+        </div>
+    </div>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 { font-size: 24px; margin-bottom: 5px; }
+        .header p { font-size: 14px; opacity: 0.9; }
+        .status-card {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .status.connected { color: #27ae60; }
+        .status.disconnected { color: #e74c3c; }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+        .status.connected .status-dot { animation: none; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .scan-area {
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .nfc-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .nfc-icon.scanning {
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        #scan-status {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        #scan-message {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .scan-button {
+            width: calc(100% - 40px);
+            margin: 0 20px 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .scan-button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(46, 204, 113, 0.3); }
+        .scan-button:active { transform: translateY(0); }
+        .scan-button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .last-scans {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .last-scans h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .scan-item {
+            background: #f8f9fa;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .scan-item strong { display: block; margin-bottom: 5px; color: #333; }
+        .scan-item span { color: #7f8c8d; }
+        .manual-entry {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            background: #f8f9fa;
+        }
+        .manual-entry h3 { font-size: 16px; margin-bottom: 10px; }
+        .manual-entry p { font-size: 13px; color: #7f8c8d; margin-bottom: 15px; }
+        .manual-entry input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .manual-entry button {
+            width: 100%;
+            padding: 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .success { color: #27ae60; }
+        .error { color: #e74c3c; }
+    </style>
+
+    <script>
+        let ws = null;
+        let isScanning = false;
+        let scanHistory = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initWebSocket();
+            checkNFCSupport();
+        });
+
+        function initWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}`;
+            
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                console.log('Connected to server');
+                updateConnectionStatus(true);
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleServerMessage(data);
+            };
+
+            ws.onclose = () => {
+                console.log('Disconnected from server');
+                updateConnectionStatus(false);
+                setTimeout(initWebSocket, 3000);
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                updateConnectionStatus(false);
+            };
+        }
+
+        function updateConnectionStatus(connected) {
+            const status = document.getElementById('connection-status');
+            if (connected) {
+                status.className = 'status connected';
+                status.querySelector('span:last-child').textContent = 'Connected';
+            } else {
+                status.className = 'status disconnected';
+                status.querySelector('span:last-child').textContent = 'Disconnected';
+            }
+        }
+
+        function checkNFCSupport() {
+            if (!('NDEFReader' in window)) {
+                document.getElementById('scan-message').innerHTML = 
+                    '⚠️ NFC not supported. Use manual entry or Chrome for Android.';
+                document.getElementById('scan-button').textContent = 'NFC Not Available';
+            }
+        }
+
+        async function startNFCScan() {
+            if (!('NDEFReader' in window)) {
+                alert('NFC is not supported on this device/browser. Please use Chrome for Android or use manual entry.');
+                return;
+            }
+
+            if (isScanning) {
+                stopNFCScan();
+                return;
+            }
+
+            try {
+                const ndef = new NDEFReader();
+                document.getElementById('scan-button').textContent = 'Scanning... (Tap to Stop)';
+                document.getElementById('scan-status').textContent = 'Scanning...';
+                document.getElementById('scan-message').textContent = 'Hold NFC card near phone';
+                document.getElementById('nfc-icon').className = 'nfc-icon scanning';
+                document.getElementById('nfc-icon').textContent = '🔄';
+                isScanning = true;
+
+                await ndef.scan();
+                
+                ndef.onreading = (event) => {
+                    const nfcId = event.serialNumber;
+                    console.log('NFC card detected:', nfcId);
+                    handleNFCScan(nfcId);
+                };
+
+            } catch (error) {
+                console.error('NFC scan error:', error);
+                alert('NFC Error: ' + error.message + '\n\nPlease grant NFC permissions or use manual entry.');
+                stopNFCScan();
+            }
+        }
+
+        function stopNFCScan() {
+            isScanning = false;
+            document.getElementById('scan-button').textContent = 'Start Scanning';
+            document.getElementById('scan-status').textContent = 'Ready to Scan';
+            document.getElementById('scan-message').textContent = 'Hold your NFC card near the phone';
+            document.getElementById('nfc-icon').className = 'nfc-icon';
+            document.getElementById('nfc-icon').textContent = '🔵';
+        }
+
+        function handleNFCScan(nfcId) {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                showScanResult('error', 'Not connected to server');
+                return;
+            }
+
+            const scanData = {
+                nfcCardId: nfcId
+            };
+
+            // Send to server
+            fetch('/api/nfc/scan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(scanData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showScanResult('success', 
+                        `✅ ${data.employee.name} - ${data.action}\n` +
+                        `Time: ${new Date().toLocaleTimeString()}`
+                    );
+                    addToHistory(data.employee.name, data.action, new Date());
+                } else {
+                    showScanResult('error', data.error || 'Unknown error');
+                }
+            })
+            .catch(err => {
+                console.error('Scan error:', err);
+                showScanResult('error', 'Failed to record attendance');
+            });
+
+            // Vibrate if supported
+            if (navigator.vibrate) {
+                navigator.vibrate(200);
+            }
+
+            stopNFCScan();
+        }
+
+        function manualScan() {
+            const cardId = document.getElementById('manual-id').value.trim();
+            if (!cardId) {
+                alert('Please enter a card ID');
+                return;
+            }
+
+            handleNFCScan(cardId);
+            document.getElementById('manual-id').value = '';
+        }
+
+        function showScanResult(type, message) {
+            const statusEl = document.getElementById('scan-status');
+            const messageEl = document.getElementById('scan-message');
+            const iconEl = document.getElementById('nfc-icon');
+
+            if (type === 'success') {
+                statusEl.textContent = 'Success!';
+                statusEl.className = 'success';
+                messageEl.textContent = message;
+                iconEl.textContent = '✅';
+            } else {
+                statusEl.textContent = 'Error';
+                statusEl.className = 'error';
+                messageEl.textContent = message;
+                iconEl.textContent = '❌';
+            }
+
+            setTimeout(() => {
+                statusEl.textContent = 'Ready to Scan';
+                statusEl.className = '';
+                messageEl.textContent = 'Hold your NFC card near the phone';
+                iconEl.textContent = '🔵';
+            }, 3000);
+        }
+
+        function handleServerMessage(data) {
+            if (data.type === 'attendance_recorded') {
+                // Update UI if needed
+                console.log('Attendance recorded:', data);
+            }
+        }
+
+        function addToHistory(name, action, time) {
+            scanHistory.unshift({ name, action, time });
+            if (scanHistory.length > 5) scanHistory.pop();
+            
+            const listEl = document.getElementById('scan-list');
+            listEl.innerHTML = scanHistory.map(scan => `
+                <div class="scan-item">
+                    <strong>${scan.name} - ${scan.action}</strong>
+                    <span>${scan.time.toLocaleString()}</span>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
