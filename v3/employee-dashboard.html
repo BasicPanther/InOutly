@@ -1,0 +1,501 @@
+<!-- EMPLOYEE DASHBOARD - COMPLETE WITH ALL FEATURES -->
+<!-- INCLUDES: Leave Requests with Cancel, Meeting Bookings with Attendees, Attendance View, Projects -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #ddd; }
+        .header h1 { font-size: 28px; }
+        .logout-btn { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 30px; }
+        .nav-tab { padding: 12px 20px; background: #e0e0e0; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; }
+        .nav-tab.active { background: #3498db; color: white; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .stat-card h3 { font-size: 28px; color: #3498db; margin: 0 0 5px 0; }
+        .stat-card p { color: #7f8c8d; font-size: 14px; }
+        .card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .card h2 { margin-bottom: 15px; font-size: 20px; }
+        .btn-primary { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        .btn-primary:hover { background: #2980b9; }
+        .request-item { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 10px; }
+        .status-badge { display: inline-block; padding: 5px 10px; background: #27ae60; color: white; border-radius: 15px; font-size: 12px; }
+        .status-badge.pending { background: #f39c12; }
+        .status-badge.approved { background: #27ae60; }
+        .status-badge.rejected { background: #e74c3c; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: 'Inter', sans-serif; }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .checkbox-group { border: 1px solid #ddd; padding: 10px; border-radius: 5px; max-height: 150px; overflow-y: auto; }
+        .checkbox-group label { display: flex; align-items: center; margin-bottom: 8px; }
+        .checkbox-group input[type="checkbox"] { margin-right: 10px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        .modal-actions button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        .project-item { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 10px; }
+        @media (max-width: 768px) { .nav-tabs { flex-wrap: wrap; } .stats-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Employee Portal</h1>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('dashboard')">Dashboard</button>
+            <button class="nav-tab" onclick="showTab('attendance')">Attendance</button>
+            <button class="nav-tab" onclick="showTab('leaves')">Leave Requests</button>
+            <button class="nav-tab" onclick="showTab('meetings')">Meeting Rooms</button>
+            <button class="nav-tab" onclick="showTab('projects')">My Projects</button>
+        </div>
+
+        <!-- Dashboard -->
+        <section id="dashboard" class="section active">
+            <div class="stats-grid">
+                <div class="stat-card"><h3 id="stat-present">0</h3><p>Days Present</p></div>
+                <div class="stat-card"><h3 id="stat-hours">0</h3><p>Total Hours</p></div>
+                <div class="stat-card"><h3 id="stat-projects">0</h3><p>Active Projects</p></div>
+            </div>
+            <div class="card">
+                <h2>Welcome!</h2>
+                <p>Your personal employee portal is ready. Use the tabs above to manage your attendance, leave requests, and meeting room bookings.</p>
+            </div>
+        </section>
+
+        <!-- Attendance -->
+        <section id="attendance" class="section">
+            <div class="card">
+                <h2>Attendance History</h2>
+                <div class="form-group">
+                    <label>Select Month</label>
+                    <input type="month" id="attendance-month" onchange="loadAttendance()" style="width: 200px;">
+                </div>
+                <div id="attendance-list"></div>
+            </div>
+        </section>
+
+        <!-- Leave Requests -->
+        <section id="leaves" class="section">
+            <div class="card">
+                <h2>Leave Requests</h2>
+                <button class="btn-primary" onclick="showLeaveModal()">Request Leave</button>
+                <div id="leaves-list" style="margin-top: 20px;"></div>
+            </div>
+        </section>
+
+        <!-- Meeting Rooms -->
+        <section id="meetings" class="section">
+            <div class="card">
+                <h2>Meeting Room Bookings</h2>
+                <button class="btn-primary" onclick="showMeetingModal()">Book Meeting Room</button>
+                <div id="meetings-list" style="margin-top: 20px;"></div>
+            </div>
+        </section>
+
+        <!-- Projects -->
+        <section id="projects" class="section">
+            <div class="card">
+                <h2>My Projects</h2>
+                <div id="projects-list"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Leave Modal -->
+    <div id="leaveModal" class="modal">
+        <div class="modal-content">
+            <h2>Request Leave</h2>
+            <form id="leave-form">
+                <div class="form-group">
+                    <label>Leave Type *</label>
+                    <select id="leave-type" required>
+                        <option value="">Select Type</option>
+                        <option value="sick">Sick Leave</option>
+                        <option value="vacation">Vacation</option>
+                        <option value="casual">Casual Leave</option>
+                        <option value="personal">Personal Leave</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Start Date *</label>
+                    <input type="date" id="leave-start" required>
+                </div>
+                <div class="form-group">
+                    <label>End Date *</label>
+                    <input type="date" id="leave-end" required>
+                </div>
+                <div class="form-group">
+                    <label>Reason</label>
+                    <textarea id="leave-reason" placeholder="Reason for leave"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" onclick="hideLeaveModal()" style="background: #95a5a6; color: white;">Cancel</button>
+                    <button type="submit" class="btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Meeting Modal -->
+    <div id="meetingModal" class="modal">
+        <div class="modal-content">
+            <h2>Book Meeting Room</h2>
+            <form id="meeting-form">
+                <div class="form-group">
+                    <label>Meeting Room *</label>
+                    <select id="meeting-room" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Project *</label>
+                    <select id="meeting-project" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Date *</label>
+                    <input type="date" id="meeting-date" required>
+                </div>
+                <div class="form-group">
+                    <label>Start Time *</label>
+                    <input type="time" id="meeting-start" required>
+                </div>
+                <div class="form-group">
+                    <label>End Time *</label>
+                    <input type="time" id="meeting-end" required>
+                </div>
+                <div class="form-group">
+                    <label>Purpose</label>
+                    <textarea id="meeting-purpose" placeholder="Purpose of meeting"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Invite Colleagues (optional)</label>
+                    <div id="attendees-checkboxes" class="checkbox-group"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" onclick="hideMeetingModal()" style="background: #95a5a6; color: white;">Cancel</button>
+                    <button type="submit" class="btn-primary">Book</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentEmployee = null;
+        let allProjects = [];
+        let allEmployees = [];
+        let allRooms = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadInitialData();
+            const month = new Date().toISOString().slice(0, 7);
+            document.getElementById('attendance-month').value = month;
+        });
+
+        function checkAuth() {
+            const emp = sessionStorage.getItem('employee');
+            if (!emp) window.location.href = '/login';
+            currentEmployee = JSON.parse(emp);
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = '/login';
+        }
+
+        async function loadInitialData() {
+            await Promise.all([loadStats(), loadLeaves(), loadMeetings(), loadProjects(), loadRooms(), loadEmployees(), loadAttendance()]);
+        }
+
+        async function loadStats() {
+            try {
+                const res = await fetch(`/api/employee/stats?id=${currentEmployee.id}`);
+                const stats = await res.json();
+                document.getElementById('stat-present').textContent = stats.presentDays || 0;
+                document.getElementById('stat-hours').textContent = Math.round(stats.totalHours || 0);
+                document.getElementById('stat-projects').textContent = stats.activeProjects || 0;
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        async function loadAttendance() {
+            try {
+                const month = document.getElementById('attendance-month').value;
+                const res = await fetch(`/api/employee/attendance?id=${currentEmployee.id}&month=${month}`);
+                const attendance = await res.json();
+                renderAttendance(attendance);
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        function renderAttendance(attendance) {
+            const container = document.getElementById('attendance-list');
+            if (!attendance || attendance.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:#7f8c8d;">No records</p>';
+                return;
+            }
+            container.innerHTML = attendance.map(a => {
+                const clockIn = a.clockIn ? new Date(a.clockIn).toLocaleTimeString() : '-';
+                const clockOut = a.clockOut ? new Date(a.clockOut).toLocaleTimeString() : '-';
+                return `<div class="request-item"><strong>${new Date(a.date).toLocaleDateString()}</strong><br>In: ${clockIn} | Out: ${clockOut}</div>`;
+            }).join('');
+        }
+
+        async function loadLeaves() {
+            try {
+                const res = await fetch(`/api/employee/leaves?id=${currentEmployee.id}`);
+                const leaves = await res.json();
+                renderLeaves(leaves);
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        function renderLeaves(leaves) {
+            const container = document.getElementById('leaves-list');
+            if (!leaves || leaves.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:#7f8c8d;">No requests</p>';
+                return;
+            }
+            container.innerHTML = leaves.map(l => {
+                const canCancel = l.status === 'pending' || l.status === 'approved';
+                const startDate = new Date(l.startDate).toLocaleDateString();
+                const endDate = new Date(l.endDate).toLocaleDateString();
+                return `
+                    <div class="request-item">
+                        <div>
+                            <strong>${l.leaveType?.toUpperCase()}</strong><br>
+                            <small>${startDate} to ${endDate}</small><br>
+                            <small style="color:#7f8c8d;">${l.reason || 'No reason'}</small>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                            <span class="status-badge ${l.status}">${l.status.toUpperCase()}</span>
+                            ${canCancel ? `<button class="btn-primary" onclick="cancelLeave(${l.id})" style="background:#e74c3c;padding:5px 10px;font-size:12px;">Cancel</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function loadMeetings() {
+            try {
+                const res = await fetch(`/api/employee/meetings?id=${currentEmployee.id}`);
+                const meetings = await res.json();
+                renderMeetings(meetings);
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        function renderMeetings(meetings) {
+            const container = document.getElementById('meetings-list');
+            if (!meetings || meetings.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:#7f8c8d;">No bookings</p>';
+                return;
+            }
+            container.innerHTML = meetings.map(m => {
+                const canCancel = m.status === 'pending' || m.status === 'approved';
+                return `
+                    <div class="request-item">
+                        <div>
+                            <strong>${m.roomName}</strong><br>
+                            <small>${new Date(m.bookingDate).toLocaleDateString()} | ${m.startTime} - ${m.endTime}</small><br>
+                            <small style="color:#7f8c8d;">${m.purpose || 'Meeting'}</small>
+                            ${m.attendees ? `<br><small><strong>Attendees:</strong> ${m.attendees}</small>` : ''}
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                            <span class="status-badge ${m.status}">${m.status.toUpperCase()}</span>
+                            ${canCancel ? `<button class="btn-primary" onclick="cancelMeeting(${m.id})" style="background:#e74c3c;padding:5px 10px;font-size:12px;">Cancel</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function loadProjects() {
+            try {
+                const res = await fetch(`/api/employee/projects?id=${currentEmployee.id}`);
+                allProjects = await res.json();
+                renderProjects();
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        function renderProjects() {
+            const container = document.getElementById('projects-list');
+            if (!allProjects || allProjects.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:#7f8c8d;">No projects assigned</p>';
+                return;
+            }
+            container.innerHTML = allProjects.map(p => `
+                <div class="project-item">
+                    <strong>${p.name}</strong><br>
+                    <small>${p.description || 'No description'}</small><br>
+                    <small style="color:#7f8c8d;">Status: ${p.status === 'ongoing' ? 'Active' : 'Completed'}</small>
+                </div>
+            `).join('');
+        }
+
+        async function loadRooms() {
+            try {
+                const res = await fetch('/api/meeting-rooms');
+                allRooms = await res.json();
+                const select = document.getElementById('meeting-room');
+                select.innerHTML = '<option value="">Select Room</option>' + allRooms.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        async function loadEmployees() {
+            try {
+                const res = await fetch('/api/employees');
+                allEmployees = await res.json();
+                const container = document.getElementById('attendees-checkboxes');
+                container.innerHTML = allEmployees.filter(e => e.id !== currentEmployee.id).map(e => `
+                    <label>
+                        <input type="checkbox" data-name="${e.name} (${e.id})">
+                        ${e.name}
+                    </label>
+                `).join('');
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            if (tab === 'leaves') loadLeaves();
+            if (tab === 'meetings') loadMeetings();
+            if (tab === 'projects') loadProjects();
+        }
+
+        function showLeaveModal() {
+            document.getElementById('leave-form').reset();
+            document.getElementById('leaveModal').classList.add('show');
+        }
+
+        function hideLeaveModal() {
+            document.getElementById('leaveModal').classList.remove('show');
+        }
+
+        function showMeetingModal() {
+            document.getElementById('meeting-form').reset();
+            const select = document.getElementById('meeting-project');
+            select.innerHTML = '<option value="">Select Project</option>' + allProjects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            document.getElementById('meetingModal').classList.add('show');
+        }
+
+        function hideMeetingModal() {
+            document.getElementById('meetingModal').classList.remove('show');
+        }
+
+        document.getElementById('leave-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                employeeId: currentEmployee.id,
+                leaveType: document.getElementById('leave-type').value,
+                startDate: document.getElementById('leave-start').value,
+                endDate: document.getElementById('leave-end').value,
+                reason: document.getElementById('leave-reason').value
+            };
+            try {
+                const res = await fetch('/api/leaves', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                    hideLeaveModal();
+                    await loadLeaves();
+                    alert('Leave requested!');
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        });
+
+        document.getElementById('meeting-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const attendees = Array.from(document.querySelectorAll('#attendees-checkboxes input:checked')).map(c => c.dataset.name).join(', ');
+            const data = {
+                roomId: document.getElementById('meeting-room').value,
+                employeeId: currentEmployee.id,
+                projectId: document.getElementById('meeting-project').value,
+                bookingDate: document.getElementById('meeting-date').value,
+                startTime: document.getElementById('meeting-start').value,
+                endTime: document.getElementById('meeting-end').value,
+                purpose: document.getElementById('meeting-purpose').value,
+                attendees: attendees
+            };
+            try {
+                const res = await fetch('/api/meetings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                    hideMeetingModal();
+                    await loadMeetings();
+                    alert('Meeting booked!');
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        });
+
+        async function cancelLeave(id) {
+            if (!confirm('Cancel this leave?')) return;
+            try {
+                const res = await fetch(`/api/leaves/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'cancelled' })
+                });
+                if (res.ok) {
+                    await loadLeaves();
+                    alert('Cancelled!');
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        async function cancelMeeting(id) {
+            if (!confirm('Cancel this booking?')) return;
+            try {
+                const res = await fetch(`/api/meetings/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'cancelled' })
+                });
+                if (res.ok) {
+                    await loadMeetings();
+                    alert('Cancelled!');
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+    </script>
+</body>
+</html>

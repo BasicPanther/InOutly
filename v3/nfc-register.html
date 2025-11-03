@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFC Card Registration</title>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 NFC Card Registration</h1>
+            <p>Link NFC cards to employees</p>
+            <button class="back-btn" onclick="window.location.href='/admin'">← Back to Dashboard</button>
+        </div>
+
+        <div class="main-content">
+            <div class="employee-section">
+                <h2>Step 1: Select Employee</h2>
+                <select id="employee-select" onchange="selectEmployee()">
+                    <option value="">-- Select Employee --</option>
+                </select>
+                <div id="selected-employee" class="employee-info"></div>
+            </div>
+
+            <div class="scan-section">
+                <h2>Step 2: Scan NFC Card</h2>
+                <div class="scan-area">
+                    <div id="nfc-icon" class="nfc-icon">📱</div>
+                    <p id="scan-status">Select an employee first</p>
+                </div>
+                <button id="scan-button" class="scan-button" onclick="scanNFC()" disabled>
+                    Scan NFC Card
+                </button>
+                <div class="manual-option">
+                    <p>Or enter card ID manually:</p>
+                    <input type="text" id="manual-card-id" placeholder="Enter NFC Card ID">
+                    <button onclick="linkManual()">Link Card</button>
+                </div>
+            </div>
+
+            <div class="result-section">
+                <div id="result-message"></div>
+            </div>
+
+            <div class="registered-cards">
+                <h2>Registered NFC Cards</h2>
+                <div id="cards-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            position: relative;
+        }
+        .header h1 { font-size: 28px; margin-bottom: 5px; }
+        .header p { opacity: 0.9; }
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.3); }
+        .main-content { padding: 30px; }
+        .employee-section, .scan-section, .registered-cards {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .registered-cards { border-bottom: none; }
+        h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        #employee-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            background: white;
+            cursor: pointer;
+        }
+        #employee-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .employee-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        .employee-info.show { display: block; }
+        .employee-info h3 { margin-bottom: 10px; color: #667eea; }
+        .employee-info p { margin-bottom: 5px; color: #7f8c8d; font-size: 14px; }
+        .scan-area {
+            text-align: center;
+            padding: 40px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .nfc-icon {
+            font-size: 80px;
+            margin-bottom: 15px;
+        }
+        .nfc-icon.scanning {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        #scan-status {
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+        .scan-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .scan-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .scan-button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .manual-option {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .manual-option p {
+            margin-bottom: 10px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .manual-option input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .manual-option button {
+            width: 100%;
+            padding: 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .result-section {
+            margin-bottom: 30px;
+        }
+        #result-message {
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+        #result-message.success {
+            background: #d5f4e6;
+            color: #27ae60;
+            border: 1px solid #27ae60;
+            display: block;
+        }
+        #result-message.error {
+            background: #fadbd8;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+            display: block;
+        }
+        .card-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-item strong { color: #333; display: block; margin-bottom: 5px; }
+        .card-item span { color: #7f8c8d; font-size: 13px; }
+        .card-item button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+    </style>
+
+    <script>
+        let employees = [];
+        let selectedEmployee = null;
+        let isScanning = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadEmployees();
+            loadRegisteredCards();
+            checkNFCSupport();
+        });
+
+        function checkAuth() {
+            const user = sessionStorage.getItem('user');
+            if (!user) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            const userData = JSON.parse(user);
+            if (userData.role !== 'admin') {
+                alert('Access denied. Admin only.');
+                window.location.href = '/login';
+            }
+        }
+
+        function checkNFCSupport() {
+            if (!('NDEFReader' in window)) {
+                document.getElementById('scan-status').textContent = 
+                    '⚠️ NFC not supported. Use manual entry.';
+            }
+        }
+
+        async function loadEmployees() {
+            try {
+                const res = await fetch('/api/employees');
+                employees = await res.json();
+                
+                const select = document.getElementById('employee-select');
+                select.innerHTML = '<option value="">-- Select Employee --</option>';
+                employees.forEach(emp => {
+                    select.innerHTML += `<option value="${emp.id}">${emp.name} (${emp.id})</option>`;
+                });
+            } catch (err) {
+                console.error('Error loading employees:', err);
+            }
+        }
+
+        function selectEmployee() {
+            const empId = document.getElementById('employee-select').value;
+            if (!empId) {
+                document.getElementById('selected-employee').classList.remove('show');
+                document.getElementById('scan-button').disabled = true;
+                selectedEmployee = null;
+                return;
+            }
+
+            selectedEmployee = employees.find(e => e.id === empId);
+            if (selectedEmployee) {
+                const infoDiv = document.getElementById('selected-employee');
+                infoDiv.innerHTML = `
+                    <h3>${selectedEmployee.name}</h3>
+                    <p><strong>ID:</strong> ${selectedEmployee.id}</p>
+                    <p><strong>Department:</strong> ${selectedEmployee.department}</p>
+                    <p><strong>Current NFC Card:</strong> ${selectedEmployee.nfcCardId || 'Not assigned'}</p>
+                `;
+                infoDiv.classList.add('show');
+                
+                document.getElementById('scan-button').disabled = false;
+                document.getElementById('scan-status').textContent = 'Ready to scan NFC card';
+            }
+        }
+
+        async function scanNFC() {
+            if (!selectedEmployee) {
+                alert('Please select an employee first');
+                return;
+            }
+
+            if (!('NDEFReader' in window)) {
+                alert('NFC is not supported on this device/browser.\nPlease use Chrome for Android or use manual entry.');
+                return;
+            }
+
+            if (isScanning) return;
+
+            try {
+                const ndef = new NDEFReader();
+                isScanning = true;
+                
+                document.getElementById('scan-button').textContent = 'Scanning... Place card near phone';
+                document.getElementById('scan-button').disabled = true;
+                document.getElementById('nfc-icon').className = 'nfc-icon scanning';
+                document.getElementById('scan-status').textContent = 'Hold NFC card near the phone...';
+
+                await ndef.scan();
+                
+                ndef.onreading = (event) => {
+                    const cardId = event.serialNumber;
+                    console.log('NFC card detected:', cardId);
+                    linkCard(cardId);
+                    isScanning = false;
+                };
+
+                // Timeout after 10 seconds
+                setTimeout(() => {
+                    if (isScanning) {
+                        isScanning = false;
+                        resetScanUI();
+                        showResult('error', 'Scan timeout. Please try again.');
+                    }
+                }, 10000);
+
+            } catch (error) {
+                console.error('NFC scan error:', error);
+                isScanning = false;
+                resetScanUI();
+                showResult('error', 'NFC Error: ' + error.message);
+            }
+        }
+
+        function linkManual() {
+            const cardId = document.getElementById('manual-card-id').value.trim();
+            if (!cardId) {
+                alert('Please enter a card ID');
+                return;
+            }
+            
+            if (!selectedEmployee) {
+                alert('Please select an employee first');
+                return;
+            }
+
+            linkCard(cardId);
+            document.getElementById('manual-card-id').value = '';
+        }
+
+        async function linkCard(cardId) {
+            try {
+                const res = await fetch('/api/nfc/link', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        employeeId: selectedEmployee.id,
+                        nfcCardId: cardId
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    showResult('success', 
+                        `✅ NFC Card successfully linked to ${selectedEmployee.name}!\nCard ID: ${cardId}`
+                    );
+                    await loadEmployees();
+                    await loadRegisteredCards();
+                    selectEmployee(); // Refresh employee info
+                } else {
+                    showResult('error', data.error || 'Failed to link card');
+                }
+
+            } catch (err) {
+                console.error('Link error:', err);
+                showResult('error', 'Failed to link card: ' + err.message);
+            }
+
+            resetScanUI();
+        }
+
+        function resetScanUI() {
+            document.getElementById('scan-button').textContent = 'Scan NFC Card';
+            document.getElementById('scan-button').disabled = false;
+            document.getElementById('nfc-icon').className = 'nfc-icon';
+            document.getElementById('scan-status').textContent = 'Ready to scan NFC card';
+        }
+
+        function showResult(type, message) {
+            const resultDiv = document.getElementById('result-message');
+            resultDiv.textContent = message;
+            resultDiv.className = type;
+
+            setTimeout(() => {
+                resultDiv.className = '';
+                resultDiv.textContent = '';
+            }, 5000);
+        }
+
+        async function loadRegisteredCards() {
+            try {
+                const res = await fetch('/api/employees');
+                const emps = await res.json();
+                
+                const cardsWithNFC = emps.filter(e => e.nfcCardId);
+                const listDiv = document.getElementById('cards-list');
+                
+                if (cardsWithNFC.length === 0) {
+                    listDiv.innerHTML = '<p style="color: #7f8c8d;">No cards registered yet</p>';
+                    return;
+                }
+
+                listDiv.innerHTML = cardsWithNFC.map(emp => `
+                    <div class="card-item">
+                        <div>
+                            <strong>${emp.name}</strong>
+                            <span>Card ID: ${emp.nfcCardId}</span>
+                        </div>
+                        <button onclick="unlinkCard('${emp.id}')">Unlink</button>
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                console.error('Error loading cards:', err);
+            }
+        }
+
+        async function unlinkCard(empId) {
+            if (!confirm('Are you sure you want to unlink this NFC card?')) return;
+
+            try {
+                await fetch(`/api/employees/${empId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nfcCardId: null })
+                });
+
+                showResult('success', 'NFC card unlinked successfully');
+                await loadEmployees();
+                await loadRegisteredCards();
+                if (selectedEmployee && selectedEmployee.id === empId) {
+                    selectEmployee();
+                }
+            } catch (err) {
+                showResult('error', 'Failed to unlink card');
+            }
+        }
+    </script>
+</body>
+</html>

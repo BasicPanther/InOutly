@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Employee Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .login-header h1 {
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .login-header p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .role-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .role-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .role-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.3s;
+        }
+        .btn-login:hover {
+            opacity: 0.9;
+        }
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .error-message {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+        }
+        .success-message {
+            color: #27ae60;
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+        }
+        .employee-fields {
+            display: none;
+        }
+        .employee-fields.show {
+            display: block;
+        }
+        .info-box {
+            background: #ecf0f1;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #555;
+            margin-top: 15px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>🏢 Employee Management</h1>
+            <p>Login to your account</p>
+        </div>
+
+        <div class="role-selector">
+            <button class="role-btn active" onclick="selectRole('admin')">👨‍💼 Admin</button>
+            <button class="role-btn" onclick="selectRole('employee')">👤 Employee</button>
+        </div>
+
+        <form id="login-form" onsubmit="handleLogin(event)">
+            <!-- Admin Login -->
+            <div class="admin-fields">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="admin-username" placeholder="Enter your username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="admin-password" placeholder="Enter your password" required>
+                </div>
+            </div>
+
+            <!-- Employee Login -->
+            <div class="employee-fields">
+                <div class="form-group">
+                    <label>Employee ID</label>
+                    <input type="text" id="emp-id" placeholder="Enter your Employee ID (e.g., EMP001)">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="emp-password" placeholder="Default password is 123">
+                </div>
+                <div class="info-box">
+                    💡 <strong>Employee Login:</strong><br>
+                    • Use your Employee ID as username<br>
+                    • Default password is: <strong>123</strong><br>
+                    • Contact HR if you need to reset it
+                </div>
+            </div>
+
+            <button type="submit" class="btn-login" id="login-btn">Login</button>
+            <div class="error-message" id="error-message"></div>
+            <div class="success-message" id="success-message"></div>
+        </form>
+    </div>
+
+    <script>
+        let selectedRole = 'admin';
+
+        function selectRole(role) {
+            selectedRole = role;
+            document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const adminFields = document.querySelector('.admin-fields');
+            const empFields = document.querySelector('.employee-fields');
+
+            if (role === 'admin') {
+                adminFields.style.display = 'block';
+                empFields.classList.remove('show');
+                document.getElementById('admin-username').required = true;
+                document.getElementById('admin-password').required = true;
+                document.getElementById('emp-id').required = false;
+                document.getElementById('emp-password').required = false;
+            } else {
+                adminFields.style.display = 'none';
+                empFields.classList.add('show');
+                document.getElementById('admin-username').required = false;
+                document.getElementById('admin-password').required = false;
+                document.getElementById('emp-id').required = true;
+                document.getElementById('emp-password').required = true;
+            }
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const errorMsg = document.getElementById('error-message');
+            const successMsg = document.getElementById('success-message');
+            const btn = document.getElementById('login-btn');
+
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = 'Logging in...';
+
+            try {
+                let username, password;
+
+                if (selectedRole === 'admin') {
+                    username = document.getElementById('admin-username').value;
+                    password = document.getElementById('admin-password').value;
+                } else {
+                    username = document.getElementById('emp-id').value;
+                    password = document.getElementById('emp-password').value;
+                }
+
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Login failed');
+                }
+
+                if (data.user && data.user.role === 'admin') {
+                    sessionStorage.setItem('user', JSON.stringify(data.user));
+                    successMsg.textContent = 'Welcome Admin! Redirecting...';
+                    successMsg.style.display = 'block';
+                    setTimeout(() => {
+                        window.location.href = '/admin';
+                    }, 1500);
+                } else if (data.employee) {
+                    sessionStorage.setItem('employee', JSON.stringify(data.employee));
+                    successMsg.textContent = 'Welcome! Redirecting to your portal...';
+                    successMsg.style.display = 'block';
+                    setTimeout(() => {
+                        window.location.href = '/employee';
+                    }, 1500);
+                } else {
+                    throw new Error('Invalid response from server');
+                }
+            } catch (error) {
+                errorMsg.textContent = '❌ ' + error.message;
+                errorMsg.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Login';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            selectRole('admin');
+        });
+    </script>
+</body>
+</html>
