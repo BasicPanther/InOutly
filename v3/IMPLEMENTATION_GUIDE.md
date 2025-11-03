@@ -1,6 +1,6 @@
-# 🎉 COMPLETE IMPLEMENTATION GUIDE
+#  COMPLETE IMPLEMENTATION GUIDE
 
-## ✅ Files Created:
+##  Files Created:
 
 ### 1. **Database Updates** [167]
    - `add-leaves-meetings.sql` - New tables for leaves and meeting rooms
@@ -20,7 +20,7 @@
 
 ---
 
-## 🚀 IMPLEMENTATION STEPS:
+##  IMPLEMENTATION STEPS:
 
 ### Step 1: Update Database
 ```bash
@@ -50,9 +50,9 @@ node server.js
 
 ---
 
-## 📋 FEATURES ADDED:
+##  FEATURES ADDED:
 
-### ✅ Employee Dashboard (`/employee`)
+### Employee Dashboard (`/employee`)
 - **Dashboard**: Shows attendance stats, hours worked, active projects
 - **Attendance**: View personal attendance history by month
 - **Leave Requests**: 
@@ -65,12 +65,12 @@ node server.js
   - Select room, date, time, project
   - Track booking status
 
-### ✅ Employee Login
+###  Employee Login
 - Username: Employee ID (e.g., EMP001)
 - Password: 123 (default)
 - No need to create separate user accounts!
 
-### ✅ Admin Approvals Tab (To Add to Dashboard)
+###  Admin Approvals Tab (To Add to Dashboard)
 - View all pending leave requests
 - View all pending meeting room bookings
 - Approve/Reject with comments
@@ -78,7 +78,7 @@ node server.js
 
 ---
 
-## 🔗 NEW API ENDPOINTS:
+##  NEW API ENDPOINTS:
 
 ### Employee Stats
 - `GET /api/employee/stats?id=EMP001` - Get stats
@@ -103,7 +103,7 @@ node server.js
 
 ---
 
-## 📱 LOGIN INSTRUCTIONS:
+## LOGIN INSTRUCTIONS:
 
 ### For Admin:
 1. Go to https://localhost:8080
@@ -119,7 +119,7 @@ node server.js
 
 ---
 
-## 🎯 NEXT STEP: Add Approvals Tab to Admin Dashboard
+##  NEXT STEP: Add Approvals Tab to Admin Dashboard
 
 I need to add the "Approvals" tab to your admin dashboard. Would you like me to:
 1. Update admin-dashboard.html with the Approvals section?
@@ -128,7 +128,7 @@ I need to add the "Approvals" tab to your admin dashboard. Would you like me to:
 
 ---
 
-## 📚 DATABASE SCHEMA:
+##  DATABASE SCHEMA:
 
 ### leaves table:
 ```
@@ -150,7 +150,7 @@ appliedDate, approvalDate, comments
 
 ---
 
-## ⚠️ IMPORTANT NOTES:
+##  IMPORTANT NOTES:
 
 1. Employee login uses ID as username (no separate user accounts needed)
 2. Default password for all employees: `123`
@@ -161,7 +161,7 @@ appliedDate, approvalDate, comments
 
 ---
 
-## 🐛 TROUBLESHOOTING:
+##  TROUBLESHOOTING:
 
 **Issue**: Employee portal shows no attendance
 - Solution: Make sure employee has clocked in/out
@@ -173,5 +173,3 @@ appliedDate, approvalDate, comments
 - Solution: Check WebSocket connection (should see "Client connected" in terminal)
 
 ---
-
-Let me know if you need the Admin Dashboard Approvals tab updated! 🚀
