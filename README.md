@@ -6,14 +6,14 @@ It provides an intuitive dashboard interface for administrators and a mobile-fri
 🛠️ Prerequisites
 
 Before starting, ensure you have Node.js installed.
-👉 Download it from https://nodejs.org
+ Download it from https://nodejs.org
 
 Check your installation:
 
 node -v
 npm -v
 
-⚙️ Setup & Run Instructions
+ Setup & Run Instructions
 
 Open the project folder in your terminal or PowerShell.
 
@@ -26,21 +26,21 @@ Start the server:
 
 node server.js
 
-🌐 Access the Application
+ Access the Application
 
 Once the server is running, you can access the two interfaces:
 
-🖥️ Dashboard (on your computer)
+ Dashboard (on your computer)
 http://localhost:8080
 
-📱 Phone UI (on your phone or another device on the same Wi-Fi)
+ Phone UI (on your phone or another device on the same Wi-Fi)
 
 Replace {YOUR_IP_V4} with your local IP address, for example 192.168.1.5:
 
 http://{YOUR_IP_V4}/phone
 
 
-💡 Tip:
+ Tip:
 To find your IPv4 address, run this command in your terminal or PowerShell:
 
 ipconfig
